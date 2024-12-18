@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://traefik.github.io/charts
+    chart: traefik
+    targetRevision: v23.0.0 # Use the specific version you want
+    helm:
+      values: | 
+        # Custom values for the Traefik Helm chart
+        ingressRoute:
+          dashboard:
+            enabled: true
+        ports:
+          web:
+            exposedPort: 80
+            nodePort: 32080
+          websecure:
+            exposedPort: 443
+            nodePort: 32443
+        persistence:
+          enabled: true
+          size: 10Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

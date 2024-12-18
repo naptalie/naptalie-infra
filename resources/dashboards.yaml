@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard-ingress
+  namespace: default  # Use the appropriate namespace if different
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirectscheme@kubernetescrd  # Optional, forces HTTPS redirect
+spec:
+  rules:
+    - host: traefik.naptalie.com  # Change this to your desired hostname for Traefik dashboard
+      http:
+        paths:
+          - path: /  # The path that corresponds to the Traefik dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik-dashboard  # Ensure this matches your Traefik dashboard service name
+                port:
+                  number: 9000  # Default port for the Traefik dashboard
+    - host: argocd.naptalie.com  # Change this to your desired hostname for ArgoCD dashboard
+      http:
+        paths:
+          - path: /  # The path that corresponds to the ArgoCD dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server  # Ensure this matches your ArgoCD server service name
+                port:
+                  number: 443  # Default port for the ArgoCD dashboard
+  tls:
+    - hosts:
+        - traefik.naptalie.com
+        - argocd.naptalie.com
+      secretName: tls-secret  # The name of your TLS secret to enable HTTPS
