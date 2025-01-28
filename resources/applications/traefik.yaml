@@ -22,6 +22,9 @@ spec:
           websecure:
             exposedPort: 443
             nodePort: 32443
+        api: 
+          dashboard: true
+          insecure: true
         persistence:
           enabled: true
           size: 10Gi

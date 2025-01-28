@@ -1,0 +1,8 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+  namespace: traefik # Replace with the namespace where Traefik is deployed
+spec:
+  defaultCertificate:
+    secretName: traefik-default-cert
