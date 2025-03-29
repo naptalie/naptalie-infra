@@ -308,17 +308,10 @@ var tuiCmd = &cobra.Command{
 	Long:  "Start MeowTUI - An interactive pink cat-themed terminal UI for managing your K3s cluster",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("? Meow! Starting interactive terminal UI...")
-		fmt.Println("? [Controls]")
-		fmt.Println("- Arrow keys: Navigate resources")
-		fmt.Println("- Tab: Cycle through panels")
-		fmt.Println("- q or Ctrl+C: Quit")
-		fmt.Println("- h or ?: Show help")
-		fmt.Println("- :: Enter command")
-		app := NewSimpleMeowTUI()
-                if err := app.Run(); err != nil {
-                  fmt.Println("Error:", err)
-                }
+		err := SimpleMeowTUI()
+		if err != nil {
+			fmt.Println("? Hiss! Error running TUI:", err)
+		}
 	},
 }
 func init() {
