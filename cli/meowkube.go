@@ -336,4 +336,5 @@ func main() {
 		fmt.Println("? Catastrophe! ", err)
 		os.Exit(1)
 	}
+	rootCmd.AddCommand(tuiCmd)
 }
