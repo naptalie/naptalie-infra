@@ -301,7 +301,26 @@ var statusCmd = &cobra.Command{
 		fmt.Println("\n? Purr! Your K3s cluster is running smoothly!")
 	},
 }
-
+// TUI command
+var tuiCmd = &cobra.Command{
+	Use:   "purr-tui",
+	Short: "Start the interactive MeowTUI",
+	Long:  "Start MeowTUI - An interactive pink cat-themed terminal UI for managing your K3s cluster",
+	Args:  cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("? Meow! Starting interactive terminal UI...")
+		fmt.Println("? [Controls]")
+		fmt.Println("- Arrow keys: Navigate resources")
+		fmt.Println("- Tab: Cycle through panels")
+		fmt.Println("- q or Ctrl+C: Quit")
+		fmt.Println("- h or ?: Show help")
+		fmt.Println("- :: Enter command")
+		app := NewSimpleMeowTUI()
+                if err := app.Run(); err != nil {
+                  fmt.Println("Error:", err)
+                }
+	},
+}
 func init() {
 	// Add commands to root command
 	rootCmd.AddCommand(installCmd)
@@ -312,7 +331,7 @@ func init() {
 	rootCmd.AddCommand(applyCmd)
 	rootCmd.AddCommand(logsCmd)
 	rootCmd.AddCommand(statusCmd)
-	
+	rootCmd.AddCommand(tuiCmd)	
 	// Flags for install command
 	installCmd.Flags().IntVarP(&nodeCount, "nodes", "n", 1, "Number of nodes in the cluster")
 	
@@ -336,5 +355,4 @@ func main() {
 		fmt.Println("? Catastrophe! ", err)
 		os.Exit(1)
 	}
-	rootCmd.AddCommand(tuiCmd)
 }
