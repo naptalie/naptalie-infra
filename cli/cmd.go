@@ -11,6 +11,7 @@ var tuiCmd = &cobra.Command{
 	Use:   "meow",
 	Short: "Start the interactive MeowTUI",
 	Long:  "Start MeowTUI - An interactive pink cat-themed terminal UI for managing your K3s cluster",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("? Meow! Starting interactive terminal UI...")
 		tui := NewMeowTUI()

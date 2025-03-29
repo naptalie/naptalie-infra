@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+//	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -311,17 +311,113 @@ func (t *MeowTUI) updateStatusBar() {
 
 // startAutoRefresh begins the auto-refresh loop
 func (t *MeowTUI) startAutoRefresh(seconds int) {
-	ticker := time.NewTicker(time.Duration(seconds) * time.Second)
 	go func() {
-		for range ticker.C {
+		for {
+			time.Sleep(time.Duration(seconds) * time.Second)
 			t.app.QueueUpdateDraw(func() {
 				t.loadResourceDetails(t.currentView)
 			})
 		}
 	}()
 }
-
 // Run starts the terminal UI
 func (t *MeowTUI) Run() error {
 	// Set up keyboard shortcuts
-	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell␆
+	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Global keys
+		switch event.Key() {
+		case tcell.KeyEsc:
+			// If in help page, go back to main
+			if t.pages.HasPage("help") {
+				currentPage, _ := t.pages.GetFrontPage()
+				if currentPage == "help" {
+					t.pages.SwitchToPage("main")
+					return nil
+				}
+			}
+		case tcell.KeyCtrlC, tcell.KeyCtrlQ:
+			t.app.Stop()
+			return nil
+		case tcell.KeyTab:
+			// Toggle focus between resource list and detail view
+			if t.app.GetFocus() == t.resourceList {
+				t.app.SetFocus(t.detailView)
+			} else if t.app.GetFocus() == t.detailView {
+				t.app.SetFocus(t.commandInput)
+			} else {
+				t.app.SetFocus(t.resourceList)
+			}
+			return nil
+		case tcell.KeyCtrlR:
+			t.loadResourceDetails(t.currentView)
+			return nil
+		}
+
+		// Runes
+		switch event.Rune() {
+		case ':':
+			// Focus command input if not already focused
+			if t.app.GetFocus() != t.commandInput {
+				t.app.SetFocus(t.commandInput)
+				t.commandInput.SetText("")
+				return nil
+			}
+		case 'q':
+			// Only handle 'q' if not in an input field
+			if t.app.GetFocus() != t.commandInput {
+				t.app.Stop()
+				return nil
+			}
+		case 'h', '?':
+			// Only handle 'h' if not in an input field
+			if t.app.GetFocus() != t.commandInput {
+				t.pages.SwitchToPage("help")
+				return nil
+			}
+		}
+		return event
+	})
+
+	// Start auto-refresh (every 30 seconds)
+	t.startAutoRefresh(30)
+
+	// Start the application
+	return t.app.SetRoot(t.pages, true).EnableMouse(true).Run()
+}
+
+// helpContent returns the help text
+func helpContent() string {
+	pink := "[" + colorToHex(colorPrimary) + "]"
+	reset := "[-]"
+	
+	return pink + "? Welcome to MeowTUI - Your Cat-Themed Kubernetes Dashboard! ?" + reset + "\n\n" +
+		pink + "Keyboard Shortcuts:" + reset + "\n" +
+		"- " + pink + "Tab:" + reset + " Cycle focus between resource list, details, and command input\n" +
+		"- " + pink + "Esc:" + reset + " Go back or close popup\n" +
+		"- " + pink + "Ctrl+R:" + reset + " Refresh current view\n" +
+		"- " + pink + "Ctrl+C/Ctrl+Q:" + reset + " Quit\n" +
+		"- " + pink + "h, ?:" + reset + " Show this help\n" +
+		"- " + pink + "q:" + reset + " Quit\n" +
+		"- " + pink + ":"+":" + reset + " Focus command input\n\n" +
+		
+		pink + "Commands:" + reset + "\n" +
+		"- " + pink + "ns, namespace <n>:" + reset + " Switch to namespace\n" +
+		"- " + pink + "view <resource>:" + reset + " View resource type (pods, deployments, etc.)\n" +
+		"- " + pink + "describe <resource> <n>:" + reset + " Describe resource\n" +
+		"- " + pink + "logs <pod-name>:" + reset + " Show pod logs\n" +
+		"- " + pink + "refresh, r:" + reset + " Refresh current view\n" +
+		"- " + pink + "help, h, ?:" + reset + " Show this help\n" +
+		"- " + pink + "quit, q, exit:" + reset + " Exit MeowTUI\n\n" +
+		
+		"Press " + pink + "Esc" + reset + " to return to the main view."
+}
+
+// contains checks if a string is in a slice
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
